@@ -1,0 +1,70 @@
+postinfo	发帖表
+	pid	帖子id	主键 
+	title	帖子标题
+	posttime	发帖时间
+	uid_id	发帖人id 	外键 连接userinfo表的uid 
+	gid	板块id
+	gname	板块名称
+	fid	二级板块id
+	fname	二级板块名称
+	uname	发帖人名称
+	posttext	帖子内容
+	views	浏览量
+	replies	回复数
+	support	支持数
+	oppose	反对数
+	collect	收藏数
+	share	分享数
+	comments这玩意是啥我还真忘了，我得回去看看代码
+	url	帖子的链接
+	spidertime爬虫的时间
+
+replyinfo	回复表
+	rid	回复id 主键
+	pid_id	帖子id 外键 链接postinfo表的pid
+	uid_id	用户id 外键 链接userinfo表的uid
+	uname	回帖人名称
+	replytime	回帖时间
+	text	回帖内容
+	floor	楼层
+	father	回复的rid 有些回帖是有回复对象的，这个字段对应了回复对象的rid
+	url	帖子的链接
+	spidertime爬虫的时间
+
+userinfo	用户表
+	uid	用户id 主键
+	uanme	用户名称
+	group	用户组
+	visits	访问量
+	registertime注册时间
+	onlinetime在线时长
+	lastlogin	最后访问
+	lastpost	上次发表时间
+	lastactive 上次活动时间
+	forumpoint积分
+	sectionpoint版块积分
+	coin	与爱共舞币
+	friends	好友数
+	posts	主题数
+	replys	回复数
+	shares	分享数
+	userspace	已用空间
+	url	用户资料链接
+	spidertime爬虫时间
+
+userposthistory	用户历史发帖表
+	uphid	id 主键 这个不用管 用来去重的
+	uid_id	用户id 外键 对应userinfo的uid
+	pid_id	帖子id 外键 对应postinfo的pid
+	post_url	帖子的链接
+	url	爬虫的链接
+	spidertime爬虫的时间
+
+userreplyhistory	用户历史回复表
+	urhid 	id 主键 同理 用来去重的
+	uid_id	用户id 外键 对应userinfo的uid
+	pid_id	帖子id 外键 对应postinfo的pid
+	text	回复内容
+	replyurl	回复的链接
+	url	爬虫的链接
+	spidertime爬虫时间
