@@ -19,7 +19,7 @@ from selector import Selector
 from model import PostInfo, ReplyInfo, UserInfo, UserPostHistory, UserReplyHistory, db, Url, Friends, Target
 from utils import md5_url, check_url
 
-delay = [0, 0]
+delay = [1, 3]
 
 headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36',
@@ -69,9 +69,9 @@ def login(username: str, password: str, encryption: bool = False) -> requests.Se
         raise ConnectionError('登陆失败!')
 
 
-session = login('阿明酱', 'aa0beaa62b67748ebf5f6e86c7265c4d')
+session = login('isLumen', 'aa0beaa62b67748ebf5f6e86c7265c4d')
 
-# 看不懂参考：http://www.amingjiang.com/index.php/2022/08/28/%e4%b8%8e%e7%99%8c%e5%85%b1%e8%88%9e%e7%88%ac%e8%99%ab%e8%ae%b0%e5%bd%95/
+
 def _get_dsign(url: str) -> Optional[str]:
     """ js逆向 获取url中的dsign参数 """
     # url = 'https://www.yuaigongwu.com/forum.php?mod=viewthread&tid=98585'
@@ -123,6 +123,10 @@ def check_content(selector: Selector) -> bool:
     if selector.xpath('//h2[@class="xs2"]/text()').get():
         if selector.xpath('//h2[@class="xs2"]/text()').get().strip().startswith('抱歉'):
             return False
+
+    if selector.xpath('//*[@id="messagetext"]/p/text()').get() == '抱歉，指定的主题不存在或已被删除或正在被审核':
+        return False
+
     return True
 
 
@@ -252,7 +256,7 @@ def post_parse(pid: int, userinfo: bool = True):
             if userinfo:
                 history_post_parse(uid)
                 history_reply_parse(uid)
-                firends_parse(uid)
+                friends_parse(uid)
 
             post = PostInfo(
                 pid=pid,
@@ -350,13 +354,15 @@ def post_parse(pid: int, userinfo: bool = True):
                 if '发表于' in quote:
                     n = quote.split('发表于')[0].strip()
                     try:
-                        t = datetime.strptime(quote.split('发表于')[1].strip(), '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M')
+                        t = datetime.strptime(quote.split('发表于')[1].strip(), '%Y-%m-%d %H:%M').strftime(
+                            '%Y-%m-%d %H:%M')
                     except ValueError:
                         t = quote.split('发表于')[1].strip()
                 else:
                     n = quote.split()[0].strip()
                     try:
-                        t = datetime.strptime(' '.join(quote.split()[1:]).strip(), '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M')
+                        t = datetime.strptime(' '.join(quote.split()[1:]).strip(), '%Y-%m-%d %H:%M').strftime(
+                            '%Y-%m-%d %H:%M')
                     except ValueError:
                         t = ''
                 quote = n + ' 发表于 ' + t
@@ -599,7 +605,7 @@ def history_reply_parse(uid: str):
         sbf.add(md5_url(url.format(uid, page)))
 
 
-def firends_parse(uid: str):
+def friends_parse(uid: str):
     """ 好友解析器 """
     # https://www.yuaigongwu.com/home.php?mod=space&uid=3&do=friend&from=space&page=1
     url = 'https://www.yuaigongwu.com/home.php?mod=space&uid={}&do=friend&from=space&page={}'
@@ -648,13 +654,20 @@ def main():
     for table in tables:
         if not db.table_exists(table):
             db.create_tables([table])
-    with open('tid.txt', 'r') as f:
-        for line in f.readlines():
-            pid = int(line.strip())
-
-            post_parse(pid, True)
-
-    db.close()
+    # with open('tid.txt', 'r') as f:
+    #     for line in f.readlines():
+    #         pid = int(line.strip())
+    #
+    #         post_parse(pid, True)
+    idx = 0
+    try:
+        while True:
+            post_parse(idx, False)
+            idx += 1
+    except Exception as e:
+        print(e)
+    finally:
+        db.close()
 
     return True
 
@@ -704,4 +717,3 @@ if __name__ == '__main__':
     #
     #         target = Target(pid=pid)
     #         save_model(target)
-
