@@ -6,7 +6,8 @@ from typing import Optional
 import six
 from lxml import etree
 from lxml.etree import _Element
-from parsel.utils import iflatten
+
+from utils import iflatten
 
 
 class Selector:
