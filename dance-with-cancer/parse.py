@@ -165,7 +165,12 @@ def post_parse(pid: int, userinfo: bool = True):
         selector = Selector(root=root)
 
         # 没权限 直接退出
-        if not check_content(selector): return
+        if not check_content(selector):
+            urlmodel = Url(urlid=md5_url(url.format(pid, page)),
+                           url=url.format(pid, page))
+            save_model(urlmodel)
+            sbf.add(md5_url(url.format(pid, page)))
+            return
 
         regx = '//*[@class="comiis_pgs cl"]/*[@class="pg"]/label/span/text()'
         total_page = selector.xpath(regx).get()
@@ -661,7 +666,7 @@ def main():
     #         pid = int(line.strip())
     #
     #         post_parse(pid, True)
-    idx = 0
+    idx = 8500
     try:
         while True:
             post_parse(idx, False)
