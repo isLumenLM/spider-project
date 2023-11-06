@@ -81,6 +81,9 @@ def _get_dsign(url: str) -> Optional[str]:
     root = etree.HTML(response.text)
     selector = Selector(root=root)
 
+    if selector.xpath('//head').get():
+        return ''
+
     script = selector.xpath('//script/text()').get()
     func = ('function get_dsign() {'
             'window = {};'
@@ -149,9 +152,10 @@ def post_parse(pid: int, userinfo: bool = True):
     # https://www.yuaigongwu.com/thread-58219-1-1.html
     url = 'https://www.yuaigongwu.com/thread-{}-{}-1.html'
     design = _get_dsign(url.format(pid, 1))
-    # design = ''
     if design:
         url += '?_dsign=' + design
+    elif design == '':
+        pass
     else:
         return
 
@@ -159,7 +163,10 @@ def post_parse(pid: int, userinfo: bool = True):
     page = 0
     while True:
         page += 1
-        # if not check_url(url.format(pid, page), sbf): continue
+
+        if not check_url(url.format(pid, page), sbf):
+            continue
+
         response = get(url=url.format(pid, page), headers=headers, session=session, time_delay=delay)
         root = etree.HTML(response.text)
         selector = Selector(root=root)
@@ -179,6 +186,10 @@ def post_parse(pid: int, userinfo: bool = True):
         else:
             total_page = 1
         if page > total_page:
+            urlmodel = Url(urlid=md5_url(url.format(pid, page)),
+                           url=url.format(pid, page))
+            save_model(urlmodel)
+            sbf.add(md5_url(url.format(pid, page)))
             break
 
         # 帖子基本信息
