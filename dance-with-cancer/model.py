@@ -6,19 +6,13 @@ from pprint import pprint
 
 from peewee import *
 import setting
+from base_ import PrintMixin
 
 db = MySQLDatabase(database='dancewithcancer',
                    host=setting.host,
                    port=setting.port,
                    user=setting.user,
                    password=setting.password)
-
-
-class PrintMixin:
-
-    def print(self):
-        pprint(self.__class__.__name__)
-        pprint(vars(self).get('__data__'))
 
 
 class UserInfo(Model, PrintMixin):

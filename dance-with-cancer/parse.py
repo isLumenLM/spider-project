@@ -100,7 +100,8 @@ def _get_dsign(url: str) -> Optional[str]:
     try:
         get_dsign = execjs.compile(func)
         design = get_dsign.call('get_dsign').split('=')[1]
-    except execjs._exceptions.ProcessExitedWithNonZeroStatus:
+    except execjs._exceptions.ProcessExitedWithNonZeroStatus as e:
+        print(e)
         return _get_dsign(url)
     except AttributeError:
         return None
@@ -150,16 +151,18 @@ def post_parse(pid: int, userinfo: bool = True):
     url = 'https://www.yuaigongwu.com/thread-{}-{}-1.html'
     design = _get_dsign(url.format(pid, 1))
     # design = ''
-    if design:
-        url += '?_dsign=' + design
-    else:
-        return
+    if 1==1:
+        if design:
+            url += '?_dsign=' + design
+        else:
+            return
 
     au_add_time = []
     page = 0
     while True:
         page += 1
-        # if not check_url(url.format(pid, page), sbf): continue
+        if not check_url(url.format(pid, page), sbf):
+            continue
         response = get(url=url.format(pid, page), headers=headers, session=session, time_delay=delay)
         root = etree.HTML(response.text)
         selector = Selector(root=root)
@@ -687,7 +690,7 @@ if __name__ == '__main__':
     #             break
     #     except:
     #         continue
-    main()
+    # main()
     # while True:
     #     _get_dsign('1')
 
@@ -703,7 +706,7 @@ if __name__ == '__main__':
     # resopnse = session.get('https://www.yuaigongwu.com/home.php?mod=space&uid=109382&do=thread&view=me&type=reply&order=dateline&from=space&page=10', headers=headers)
     # print(resopnse.text)
 
-    # post_parse(111442, userinfo=True)
+    post_parse(70240, userinfo=False)
 
     # with open('tid.txt', 'r') as f:
     #     for line in f.readlines():
