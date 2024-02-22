@@ -87,3 +87,17 @@ class Url(Model):
 
     class Meta:
         database = db
+
+
+class SucceedPid(Model):
+    pid = CharField(primary_key=True)
+
+    class Meta:
+        database = db
+
+
+class FailedPid(Model):
+    pid = CharField(primary_key=True)
+
+    class Meta:
+        database = db

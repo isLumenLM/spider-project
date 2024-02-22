@@ -15,7 +15,7 @@ from pybloom_live import ScalableBloomFilter
 
 from requester import get
 from selector import Selector
-from tmjy.model import db, Url, PostInfo, ReplyInfo, UserInfo
+from tmjy.model import db, Url, PostInfo, ReplyInfo, UserInfo, SucceedPid, FailedPid
 from utils import check_url, md5_url, save_model
 
 delay = [1, 3]
@@ -26,10 +26,15 @@ headers = {
 
 db.connect()
 
-sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH, error_rate=0.000001)
+url_sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH, error_rate=0.000001)
 if db.table_exists(Url):
     for i in Url.select():
-        sbf.add(i.urlid)
+        url_sbf.add(i.urlid)
+
+pid_sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH, error_rate=0.000001)
+if db.table_exists(SucceedPid):
+    for i in SucceedPid.select():
+        pid_sbf.add(i.pid)
 
 
 def login(username: str, password: str) -> requests.Session:
@@ -124,15 +129,16 @@ def check_content(selector: Selector) -> bool:
 
 
 def post_parse(pid: int):
-    url = 'https://bbs.tnbz.com/thread-{}-{}-1.html'
+    if pid in pid_sbf:
+        return
 
+    url = 'https://bbs.tnbz.com/thread-{}-{}-1.html'
     page = 0
     au_add_time = {}
     while True:
         page += 1
-
         # 检查帖子是否爬过
-        if not check_url(url.format(pid, page), sbf):
+        if not check_url(url.format(pid, page), url_sbf):
             continue
 
         response = get(url=url.format(pid, page), headers=headers, session=logout_session, time_delay=delay)
@@ -144,7 +150,7 @@ def post_parse(pid: int):
             urlmodel = Url(urlid=md5_url(url.format(pid, page)),
                            url=url.format(pid, page))
             save_model(urlmodel)
-            sbf.add(md5_url(url.format(pid, page)))
+            url_sbf.add(md5_url(url.format(pid, page)))
             return
 
         # 获取总共页码
@@ -342,13 +348,13 @@ def post_parse(pid: int):
         urlmodel = Url(urlid=md5_url(url.format(pid, page)),
                        url=url.format(pid, page))
         save_model(urlmodel)
-        sbf.add(md5_url(url.format(pid, page)))
+        url_sbf.add(md5_url(url.format(pid, page)))
 
 
 def user_parse(uid: str):
     url = 'https://bbs.tnbz.com/home.php?mod=space&uid={}&do=profile'
 
-    if not check_url(url.format(uid), sbf): return
+    if not check_url(url.format(uid), url_sbf): return
     response = get(url=url.format(uid), headers=headers, session=login_session, time_delay=delay)
     html = etree.HTML(response.text)
     selector = Selector(root=html)
@@ -455,11 +461,11 @@ def user_parse(uid: str):
     urlmodel = Url(urlid=md5_url(url.format(uid)),
                    url=url.format(uid))
     save_model(urlmodel)
-    sbf.add(md5_url(url.format(uid)))
+    url_sbf.add(md5_url(url.format(uid)))
 
 
 def main():
-    tables = [UserInfo, PostInfo, ReplyInfo, Url]
+    tables = [UserInfo, PostInfo, ReplyInfo, Url, SucceedPid, FailedPid]
     for table in tables:
         if not db.table_exists(table):
             db.create_tables([table])
@@ -468,9 +474,12 @@ def main():
     #         pid = int(line.strip())
     #
     #         post_parse(pid, True)
-    idx = 165
+    idx = 0
+
     while True:
         post_parse(idx)
+        succeed_pid = SucceedPid(pid=idx)
+        save_model(succeed_pid)
         idx += 1
 
 
