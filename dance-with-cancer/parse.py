@@ -19,7 +19,7 @@ sys.path.append("..")
 from requester import get
 from selector import Selector
 from model import PostInfo, ReplyInfo, UserInfo, UserPostHistory, UserReplyHistory, db, Url, Friends, Target
-from utils import md5_url, check_url
+from utils import md5_url, check_url, save_model
 
 delay = [1, 3]
 
@@ -131,18 +131,6 @@ def check_content(selector: Selector) -> bool:
         return False
 
     return True
-
-
-def save_model(model: peewee.Model):
-    """ 保存model 存到数据库 """
-    try:
-        ret = model.save(force_insert=True)
-        if ret:
-            print('数据保存成功')
-        else:
-            print('数据保存失败', ret)
-    except Exception as e:
-        print('数据保存失败', e)
 
 
 def post_parse(pid: int, userinfo: bool = True):

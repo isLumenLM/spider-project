@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # @Time    : 2022/7/16 15:03
 # @Author  : LM
-from typing import Optional
+from typing import Optional, List
 
 import six
 from lxml import etree
@@ -56,6 +56,9 @@ class SelectorList(list):
             return self[index].get()
         except IndexError:
             return default
+
+    def get_all(self) -> List:
+        return [self[i].get() for i in range(len(self))]
 
     @staticmethod
     def __flatten(x):

@@ -2,7 +2,7 @@
 # @Time    : 2022/7/16 14:43
 # @Author  : LM
 
-host = '10.236.52.45'
+host = 'localhost'
 port = 3306
 user = 'root'
 password = 'admin'

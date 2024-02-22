@@ -3,8 +3,21 @@
 # @Author  : LM
 import hashlib
 
+import peewee
 import six
 from pybloom_live import ScalableBloomFilter
+
+
+def save_model(model: peewee.Model):
+    """ 保存model 存到数据库 """
+    try:
+        ret = model.save(force_insert=True)
+        if ret:
+            print('数据保存成功')
+        else:
+            print('数据保存失败', ret)
+    except Exception as e:
+        print('数据保存失败', e)
 
 
 def md5_url(url: str) -> str:
@@ -20,6 +33,7 @@ def check_url(url: str, sbf: ScalableBloomFilter) -> bool:
     else:
         return False
 
+
 def iflatten(x):
     """iflatten(sequence) -> Iterator
     Similar to ``.flatten()``, but returns iterator instead"""
@@ -29,6 +43,7 @@ def iflatten(x):
                 yield el_
         else:
             yield el
+
 
 def _is_listlike(x):
     """
@@ -52,6 +67,7 @@ def _is_listlike(x):
     True
     """
     return hasattr(x, "__iter__") and not isinstance(x, (six.text_type, bytes))
+
 
 def flatten(x):
     """flatten(sequence) -> list
