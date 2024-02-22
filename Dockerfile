@@ -13,4 +13,9 @@ VOLUME /var/lib/mysql
 # 进入mysql后登录
 # mysql -u root -p
 # 创建database
-# create database dancewithcancer;
+# CREATE DATABASE tmjy CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+# set character_set_client=utf8mb4;
+# set character_set_connection=utf8mb4;
+# set character_set_database=utf8mb4;
+# set character_set_results=utf8mb4;
+# set character_set_server=utf8mb4;

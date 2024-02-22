@@ -19,7 +19,7 @@ sys.path.append("..")
 from requester import get
 from selector import Selector
 from model import PostInfo, ReplyInfo, UserInfo, UserPostHistory, UserReplyHistory, db, Url, Friends, Target
-from utils import md5_url, check_url
+from utils import md5_url, check_url, save_model
 
 delay = [1, 3]
 
@@ -81,9 +81,6 @@ def _get_dsign(url: str) -> Optional[str]:
     root = etree.HTML(response.text)
     selector = Selector(root=root)
 
-    if selector.xpath('//head').get():
-        return ''
-
     script = selector.xpath('//script/text()').get()
     func = ('function get_dsign() {'
             'window = {};'
@@ -103,7 +100,8 @@ def _get_dsign(url: str) -> Optional[str]:
     try:
         get_dsign = execjs.compile(func)
         design = get_dsign.call('get_dsign').split('=')[1]
-    except execjs._exceptions.ProcessExitedWithNonZeroStatus:
+    except execjs._exceptions.ProcessExitedWithNonZeroStatus as e:
+        print(e)
         return _get_dsign(url)
     except AttributeError:
         return None
@@ -135,38 +133,24 @@ def check_content(selector: Selector) -> bool:
     return True
 
 
-def save_model(model: peewee.Model):
-    """ 保存model 存到数据库 """
-    try:
-        ret = model.save(force_insert=True)
-        if ret:
-            print('数据保存成功')
-        else:
-            print('数据保存失败', ret)
-    except Exception as e:
-        print('数据保存失败', e)
-
-
 def post_parse(pid: int, userinfo: bool = True):
     """ 帖子解析 """
     # https://www.yuaigongwu.com/thread-58219-1-1.html
     url = 'https://www.yuaigongwu.com/thread-{}-{}-1.html'
     design = _get_dsign(url.format(pid, 1))
-    if design:
-        url += '?_dsign=' + design
-    elif design == '':
-        pass
-    else:
-        return
+    # design = ''
+    if 1==1:
+        if design:
+            url += '?_dsign=' + design
+        else:
+            return
 
     au_add_time = []
     page = 0
     while True:
         page += 1
-
         if not check_url(url.format(pid, page), sbf):
             continue
-
         response = get(url=url.format(pid, page), headers=headers, session=session, time_delay=delay)
         root = etree.HTML(response.text)
         selector = Selector(root=root)
@@ -186,10 +170,6 @@ def post_parse(pid: int, userinfo: bool = True):
         else:
             total_page = 1
         if page > total_page:
-            urlmodel = Url(urlid=md5_url(url.format(pid, page)),
-                           url=url.format(pid, page))
-            save_model(urlmodel)
-            sbf.add(md5_url(url.format(pid, page)))
             break
 
         # 帖子基本信息
@@ -698,7 +678,7 @@ if __name__ == '__main__':
     #             break
     #     except:
     #         continue
-    main()
+    # main()
     # while True:
     #     _get_dsign('1')
 
@@ -714,7 +694,7 @@ if __name__ == '__main__':
     # resopnse = session.get('https://www.yuaigongwu.com/home.php?mod=space&uid=109382&do=thread&view=me&type=reply&order=dateline&from=space&page=10', headers=headers)
     # print(resopnse.text)
 
-    # post_parse(111442, userinfo=True)
+    post_parse(70240, userinfo=False)
 
     # with open('tid.txt', 'r') as f:
     #     for line in f.readlines():
