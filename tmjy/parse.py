@@ -18,7 +18,7 @@ from selector import Selector
 from tmjy.model import db, Url, PostInfo, ReplyInfo, UserInfo, SucceedPid, FailedPid
 from utils import check_url, md5_url, save_model
 
-delay = [1, 3]
+delay = [1, 2]
 
 headers = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36',
@@ -474,13 +474,18 @@ def main():
     #         pid = int(line.strip())
     #
     #         post_parse(pid, True)
-    idx = 0
+    idx = 310000
 
     while True:
-        post_parse(idx)
-        succeed_pid = SucceedPid(pid=idx)
-        save_model(succeed_pid)
-        idx += 1
+        try:
+            post_parse(idx)
+            succeed_pid = SucceedPid(pid=idx)
+            save_model(succeed_pid)
+        except Exception as e:
+            failed_pid = FailedPid(pid=idx)
+            save_model(failed_pid)
+        finally:
+            idx += 1
 
 
 if __name__ == '__main__':

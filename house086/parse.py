@@ -403,10 +403,15 @@ def main():
             db.create_tables([table])
     idx = 0
     while True:
-        post_parse(idx)
-        succeed_pid = SucceedPid(pid=idx)
-        save_model(succeed_pid)
-        idx += 1
+        try:
+            post_parse(idx)
+            succeed_pid = SucceedPid(pid=idx)
+            save_model(succeed_pid)
+        except Exception as e:
+            failed_pid = FailedPid(pid=idx)
+            save_model(failed_pid)
+        finally:
+            idx += 1
 
 
 if __name__ == '__main__':
