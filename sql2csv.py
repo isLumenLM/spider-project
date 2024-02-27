@@ -6,20 +6,22 @@
 
 import pymysql
 import pandas as pd
-from getpass import getpass
 import argparse
+
+import setting
 
 # 解析命令行参数
 parser = argparse.ArgumentParser(description='Script to export MySQL table to CSV file.')
-parser.add_argument('--table', required=True, help='Name of the table to export.')
-parser.add_argument('--fileout', required=True, help='Path to save CSV file.')
+parser.add_argument('-d', '--database', required=True, help='Name of the database to export.')
+parser.add_argument('-t', '--table', required=True, help='Name of the table to export.')
+parser.add_argument('-f', '--fileout', required=True, help='Path to save CSV file.')
 args = parser.parse_args()
 
 # Prompt for database credentials
-hostname = 'localhost'
-username = 'root'
-password = 'root'
-database = 'dancewithcancer'
+hostname = setting.host
+username = setting.user
+password = setting.password
+database = args.database
 
 # 建立数据库连接
 conn = pymysql.connect(
