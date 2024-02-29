@@ -101,3 +101,17 @@ class FailedPid(Model):
 
     class Meta:
         database = db
+
+
+class TargetPid(Model):
+    pid = CharField(primary_key=True)
+
+    class Meta:
+        database = db
+
+
+class FidInfo(Model):
+    fid = IntegerField()
+
+    class Meta:
+        database = db

@@ -13,6 +13,9 @@ from PIL import Image
 from lxml import etree
 from pybloom_live import ScalableBloomFilter
 
+import sys
+sys.path.append('..')
+
 from requester import get
 from selector import Selector
 from tmjy.model import db, Url, PostInfo, ReplyInfo, UserInfo, SucceedPid, FailedPid
