@@ -28,6 +28,9 @@ db.connect()
 session = requests.Session()
 
 sbf = ScalableBloomFilter(mode=ScalableBloomFilter.SMALL_SET_GROWTH, error_rate=0.000001)
+if db.table_exists(Url):
+    for i in Url.select():
+        sbf.add(i.urlid)
 
 
 def get_fid():
@@ -92,7 +95,6 @@ def get_pid(fid: int):
         total_page = selector.xpath(regx).get()
         if total_page:
             total_page = int(total_page.split(' ')[1])
-            print(total_page)
         else:
             total_page = 1
         if page > total_page:

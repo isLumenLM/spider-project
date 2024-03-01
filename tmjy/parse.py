@@ -18,7 +18,7 @@ sys.path.append('..')
 
 from requester import get
 from selector import Selector
-from tmjy.model import db, Url, PostInfo, ReplyInfo, UserInfo, SucceedPid, FailedPid
+from tmjy.model import db, Url, PostInfo, ReplyInfo, UserInfo, SucceedPid, FailedPid, TargetPid
 from utils import check_url, md5_url, save_model
 
 delay = [1, 2]
@@ -174,6 +174,15 @@ def post_parse(pid: int):
             regx = '//div[@class="pti"]/div[@class="authi"]/em/text()'
             posttime = selector.xpath(regx).get()
             posttime = datetime.strptime(posttime.split('发表于')[1].strip(), '%Y-%m-%d %H:%M:%S')
+
+            start_time = datetime.strptime('2013-12-01 00:00:00', '%Y-%m-%d %H:%M:%S')
+            end_time = datetime.strptime('2023-12-31 23:59:59', '%Y-%m-%d %H:%M:%S')
+            if posttime > end_time or posttime < start_time:
+                urlmodel = Url(urlid=md5_url(url.format(pid, page)),
+                               url=url.format(pid, page))
+                save_model(urlmodel)
+                url_sbf.add(md5_url(url.format(pid, page)))
+                continue
 
             regx = '//div[@id="postlist"]/div[starts-with(@id, "post_")][1]//td[@class="pls"]/div/div/div/a[@class="xw1"]/@href'
             uid = selector.xpath(regx).get()
@@ -477,18 +486,16 @@ def main():
     #         pid = int(line.strip())
     #
     #         post_parse(pid, True)
-    idx = 310000
-
-    while True:
+    for pid in TargetPid.select():
         try:
-            post_parse(idx)
-            succeed_pid = SucceedPid(pid=idx)
+            post_parse(pid.pid)
+            succeed_pid = SucceedPid(pid=pid.pid)
             save_model(succeed_pid)
         except Exception as e:
-            failed_pid = FailedPid(pid=idx)
+            failed_pid = FailedPid(pid=pid.pid)
             save_model(failed_pid)
-        finally:
-            idx += 1
+
+
 
 
 if __name__ == '__main__':
