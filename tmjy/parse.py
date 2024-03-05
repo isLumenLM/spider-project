@@ -41,7 +41,6 @@ if db.table_exists(SucceedPid):
 
 
 def login(username: str, password: str) -> requests.Session:
-
     def _get_seccode(login_selector: Selector):
         img = login_selector.xpath('//img[@class="seccodeimg"]/@src').get()
         img_params = parse_qs(img.split('?')[1].replace("&amp;", "&"))
@@ -182,7 +181,7 @@ def post_parse(pid: int):
                                url=url.format(pid, page))
                 save_model(urlmodel)
                 url_sbf.add(md5_url(url.format(pid, page)))
-                continue
+                break
 
             regx = '//div[@id="postlist"]/div[starts-with(@id, "post_")][1]//td[@class="pls"]/div/div/div/a[@class="xw1"]/@href'
             uid = selector.xpath(regx).get()
@@ -494,8 +493,6 @@ def main():
         except Exception as e:
             failed_pid = FailedPid(pid=pid.pid)
             save_model(failed_pid)
-
-
 
 
 if __name__ == '__main__':
