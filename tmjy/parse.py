@@ -103,7 +103,7 @@ def login(username: str, password: str) -> requests.Session:
 
 logout_session = requests.Session()
 
-login_session = login('Mark_xu', 'xyt12345678')
+login_session = login('123', '123')
 
 
 def check_content(selector: Selector) -> bool:
