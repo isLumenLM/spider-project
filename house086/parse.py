@@ -204,7 +204,7 @@ def post_parse(pid: int):
                 pid=pid,
                 uid=uid,
                 uname=uname,
-                replytime=posttime,
+                replytime=posttime.strftime('%Y-%m-%d %H:%M:%S'),
                 text=posttext,
                 floor='1',
                 url=url.format(pid, page),
